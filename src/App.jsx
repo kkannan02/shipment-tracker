@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import * as XLSX from 'xlsx';
 
-const EXCEL_FILE_URL = 'PASTE_YOUR_PUBLIC_ONEDRIVE_DOWNLOAD_LINK_HERE';
+const EXCEL_FILE_URL = 'https://tkmglobal-my.sharepoint.com/:x:/g/personal/kkannan_tkmglobal_net/IQAEQUPfAHgYS4Nv3gcKJT5vAYLuJ4BjFb5zmEwSzBfmkPs?download=1';
 
 const DEMO_ROWS = [
   {
