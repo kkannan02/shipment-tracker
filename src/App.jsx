@@ -43,20 +43,28 @@ const DEMO_ROWS = [
 ];
 
 async function loadWorkbookData() {
-  const response = await fetch('/api/excel-data');
+  const response = await fetch('/data.xlsx');
 
   if (!response.ok) {
-    let errorMessage = `Could not load shipment data. Status: ${response.status}`;
-    try {
-      const data = await response.json();
-      if (data?.error) errorMessage = data.error;
-    } catch (_) {
-      // ignore json parse failure
-    }
-    throw new Error(errorMessage);
+    throw new Error(`Could not load shipment data. Status: ${response.status}`);
   }
 
-  return response.json();
+  const arrayBuffer = await response.arrayBuffer();
+  const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+
+  const targetSheets = workbook.SheetNames.filter((name) =>
+    ['lcl', 'fcl+import'].includes(name.toLowerCase())
+  );
+
+  const sheetsToUse = targetSheets.length ? targetSheets : workbook.SheetNames;
+
+  const rows = sheetsToUse.flatMap((sheetName) => {
+    const worksheet = workbook.Sheets[sheetName];
+    const json = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+    return json.map((row) => mapRow(row, sheetName));
+  });
+
+  return { rows, source: 'excel' };
 }
 
 function App() {
