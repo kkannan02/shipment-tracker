@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import * as XLSX from 'xlsx';
 
-const EXCEL_FILE_URL = 'https://tkmglobal-my.sharepoint.com/:x:/g/personal/kkannan_tkmglobal_net/IQAEQUPfAHgYS4Nv3gcKJT5vAYLuJ4BjFb5zmEwSzBfmkPs?download=1';
 
 const DEMO_ROWS = [
   {
@@ -131,9 +130,19 @@ function mapRow(row, sheetName) {
 }
 
 async function loadWorkbookData() {
-  if (!EXCEL_FILE_URL || EXCEL_FILE_URL.includes('PASTE_YOUR_PUBLIC_ONEDRIVE_DOWNLOAD_LINK_HERE')) {
-    return { rows: DEMO_ROWS, source: 'demo' };
+  const response = await fetch('/api/excel-data');
+
+  if (!response.ok) {
+    let errorMessage = `Could not load shipment data. Status: ${response.status}`;
+    try {
+      const data = await response.json();
+      if (data?.error) errorMessage = data.error;
+    } catch (_) {}
+    throw new Error(errorMessage);
   }
+
+  return response.json();
+}
 
   const response = await fetch(EXCEL_FILE_URL);
   if (!response.ok) {
