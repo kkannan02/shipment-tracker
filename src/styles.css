@@ -64,17 +64,21 @@ h1 {
   color: #4b5563;
 }
 
-.status-box {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  padding: 18px;
+.logo-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f7f9fc;
+  border: 1px solid #d9e1ec;
+  border-radius: 20px;
+  min-height: 180px;
+  padding: 20px;
 }
 
-.status-box p {
-  margin: 12px 0 0;
-  color: #475569;
-  line-height: 1.5;
+.tkm-logo {
+  max-width: 100%;
+  max-height: 120px;
+  object-fit: contain;
 }
 
 .pill {
