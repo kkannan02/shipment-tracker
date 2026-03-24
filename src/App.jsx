@@ -1,52 +1,21 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import * as XLSX from 'xlsx';
 
-const DEMO_ROWS = [
-  {
-    sheetName: 'LCL',
-    poNumber: '4130002916',
-    positionNo: '10',
-    cargoDetails: '12 PKGS / 1,250 KGS / 3.20 CBM',
-    vessel: 'MSC Aurora',
-    pickup: 'Shanghai',
-    pol: 'Shanghai',
-    pod: 'Chennai',
-    etd: '2026-03-28',
-    eta: '2026-04-16',
-    raw: {},
-  },
-  {
-    sheetName: 'FCL+Import',
-    poNumber: '4130002916',
-    positionNo: '20',
-    cargoDetails: '1 x 40HC / 18,940 KGS / 67.50 CBM',
-    vessel: 'ONE Harmony',
-    pickup: 'Ningbo',
-    pol: 'Ningbo',
-    pod: 'Ennore',
-    etd: '2026-03-31',
-    eta: '2026-04-19',
-    raw: {},
-  },
-  {
-    sheetName: 'LCL',
-    poNumber: '4300012345',
-    positionNo: '30',
-    cargoDetails: '4 CRATES / 840 KGS / 1.90 CBM',
-    vessel: 'HMM Emerald',
-    pickup: 'Qingdao',
-    pol: 'Qingdao',
-    pod: 'Visakhapatnam',
-    etd: '2026-04-02',
-    eta: '2026-04-21',
-    raw: {},
-  },
-];
-
 const COLUMN_ALIASES = {
   poNumber: ['po_number', 'po number', 'ponumber', 'po no', 'po', 'purchase order'],
-  positionNo: ['position_no', 'position no', 'position', 'pos no', 'item no', 'line item', 'posi'],
-  pieces: ['pieces', 'pcs', 'pkgs', 'packages', 'package count'],
+  positionNo: ['position_no', 'position no', 'position', 'pos no', 'item no', 'line item'],
+  pieces: [
+    'pieces',
+    'pcs',
+    'pkgs',
+    'packages',
+    'package count',
+    'no of boxes',
+    'no of packages',
+    'boxes',
+    'cartons',
+    'qty',
+  ],
   grossWeight: ['gross wt', 'gross weight', 'gw', 'weight', 'g.wt'],
   cbm: ['cbm', 'volume', 'm3', 'cube'],
   vessel: ['vessel', 'carrier / vessel', 'mother vessel'],
@@ -104,17 +73,12 @@ function formatExcelDate(value) {
 }
 
 function buildCargoDetails(row) {
-  const direct = getMappedValue(row, COLUMN_ALIASES.cargoDetails);
-  if (direct) return String(direct);
-
   const pieces = getMappedValue(row, COLUMN_ALIASES.pieces);
   const grossWeight = getMappedValue(row, COLUMN_ALIASES.grossWeight);
-  const cbm = getMappedValue(row, COLUMN_ALIASES.cbm);
 
   return [
-    pieces ? `${pieces} PCS/PKGS` : '',
+    pieces ? `${pieces} PKGS` : '',
     grossWeight ? `${grossWeight} KGS` : '',
-    cbm ? `${cbm} CBM` : '',
   ]
     .filter(Boolean)
     .join(' / ');
@@ -135,6 +99,7 @@ function mapRow(row, sheetName) {
     raw: row,
   };
 }
+
 async function loadWorkbookData() {
   const response = await fetch('/data.xlsx');
 
@@ -181,9 +146,9 @@ function App() {
         setSource(result.source || 'excel');
       } catch (err) {
         if (!active) return;
-        setRows(DEMO_ROWS);
-        setSource('demo');
-        setError(err.message || 'Could not load Excel data. Showing demo data instead.');
+        setRows([]);
+        setSource('error');
+        setError(err.message || 'Could not load Excel data.');
       } finally {
         if (active) setLoading(false);
       }
@@ -212,21 +177,16 @@ function App() {
     <div className="page">
       <div className="hero-card">
         <div>
-          <p className="eyebrow">Shipment Tracking</p>
+          <p className="eyebrow">SHIPMENT TRACKING</p>
           <h1>Track your air and sea shipments</h1>
           <p className="subtitle">
-            Search by <strong>PO Number</strong> or <strong>Position No</strong>. The app reads data from your Excel source and shows the latest shipment details.
+            Search by <strong>PO Number</strong> or <strong>Position No.</strong> The app reads data from your Excel source
+            and shows the latest shipment details.
           </p>
         </div>
-        <div className="status-box">
-          <span className={`pill ${source === 'excel' ? 'pill-success' : 'pill-warning'}`}>
-            {source === 'excel' ? 'Live Excel Data' : source === 'demo' ? 'Demo Data' : 'Loading'}
-          </span>
-          <p>
-            {source === 'excel'
-              ? 'Connected to your Excel source.'
-              : 'Demo mode is active because live data could not be loaded.'}
-          </p>
+
+        <div className="logo-box">
+          <img src="/tkm-logo.jpg" alt="TKM Logo" className="tkm-logo" />
         </div>
       </div>
 
@@ -254,11 +214,8 @@ function App() {
           onChange={(e) => setSearchText(e.target.value)}
         />
 
-        {loading && <p className="info-text">Loading shipment data…</p>}
+        {loading && <p className="info-text">Loading shipment data...</p>}
         {!loading && error && <p className="error-text">{error}</p>}
-        {!loading && !error && source === 'demo' && (
-          <p className="info-text">You can test now with demo PO: 4130002916 or Position No: 10</p>
-        )}
       </div>
 
       <div className="results-section">
@@ -274,7 +231,6 @@ function App() {
           <div className="result-card" key={`${row.poNumber}-${row.positionNo}-${index}`}>
             <div className="result-header">
               <h2>Shipment Details</h2>
-              <span className="sheet-badge">{row.sheetName}</span>
             </div>
 
             <div className="grid">
@@ -282,7 +238,6 @@ function App() {
               <Field label="Position No" value={row.positionNo} />
               <Field label="Cargo Details" value={row.cargoDetails} />
               <Field label="Vessel" value={row.vessel} />
-              <Field label="Pickup" value={row.pickup} />
               <Field label="POL" value={row.pol} />
               <Field label="POD" value={row.pod} />
               <Field label="ETD" value={row.etd} />
