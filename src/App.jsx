@@ -45,7 +45,7 @@ const DEMO_ROWS = [
 
 const COLUMN_ALIASES = {
   poNumber: ['po_number', 'po number', 'ponumber', 'po no', 'po', 'purchase order'],
-  positionNo: ['position_no', 'position no', 'position', 'pos no', 'item no', 'line item'],
+  positionNo: ['position_no', 'position no', 'position', 'pos no', 'item no', 'line item', 'posi'],
   pieces: ['pieces', 'pcs', 'pkgs', 'packages', 'package count'],
   grossWeight: ['gross wt', 'gross weight', 'gw', 'weight', 'g.wt'],
   cbm: ['cbm', 'volume', 'm3', 'cube'],
